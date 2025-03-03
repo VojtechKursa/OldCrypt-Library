@@ -2,121 +2,121 @@
 
 namespace OldCrypt_Library.Old.Substitution
 {
-    public class Caesar : Cipher
-    {
-        private int a;
+	public class Caesar : Cipher
+	{
+		private int a;
 
-        #region Constructors
+		#region Constructors
 
-        public Caesar()
-        {
-            a = 0;
-        }
+		public Caesar()
+		{
+			a = 0;
+		}
 
-        public Caesar(int a)
-        {
-            this.a = a;
-        }
+		public Caesar(int a)
+		{
+			this.a = a;
+		}
 
-        #endregion
-
-
-        #region Getters and Setters
-
-        public int A
-        {
-            get { return a; }
-            set { a = value; }
-        }
-
-        #endregion
+		#endregion
 
 
-        #region Methods
+		#region Getters and Setters
 
-        /// <inheritdoc/>
-        public override string Encrypt(string text)
-        {
-            text = ApplyIgnoreSpaceAndCase(text);
+		public int A
+		{
+			get { return a; }
+			set { a = value; }
+		}
 
-            if (a == 0)
-                return text;
+		#endregion
 
-            string result = "";
-            int temp;
-            bool wasUpper;
 
-            foreach (char x in text)
-            {
-                if (x == ' ')
-                {
-                    result += " ";
-                    continue;
-                }
+		#region Methods
 
-                temp = x;
+		/// <inheritdoc/>
+		public override string Encrypt(string text)
+		{
+			text = ApplyIgnoreSpaceAndCase(text);
 
-                if (temp > 64 && temp < 91)
-                {
-                    wasUpper = true;
-                    temp += 32;
-                }
-                else
-                    wasUpper = false;
+			if (a == 0)
+				return text;
 
-                if (temp > 96 && temp < 123)
-                {
-                    temp = Functions.Modulo((temp - 97) + a, 26);
+			string result = "";
+			int temp;
+			bool wasUpper;
 
-                    temp += 97;
-                }
-                else
-                    HandleInvalidCharacter(result, x);
+			foreach (char x in text)
+			{
+				if (x == ' ')
+				{
+					result += " ";
+					continue;
+				}
 
-                result += wasUpper ? Convert.ToChar(temp - 32) : Convert.ToChar(temp);
+				temp = x;
 
-                progress = (double)result.Length / text.Length;
-            }
+				if (temp > 64 && temp < 91)
+				{
+					wasUpper = true;
+					temp += 32;
+				}
+				else
+					wasUpper = false;
 
-            return result;
-        }
+				if (temp > 96 && temp < 123)
+				{
+					temp = Functions.Modulo((temp - 97) + a, 26);
 
-        /// <inheritdoc/>
-        public override string Decrypt(string text)
-        {
-            a = -a;
-            string result = Encrypt(text);
-            a = -a;
+					temp += 97;
+				}
+				else
+					HandleInvalidCharacter(result, x);
 
-            return result;
-        }
+				result += wasUpper ? Convert.ToChar(temp - 32) : Convert.ToChar(temp);
 
-        /// <inheritdoc/>
-        public override byte[] Encrypt(byte[] data)
-        {
-            byte[] result = new byte[data.Length];
-            int temp;
+				progress = (double)result.Length / text.Length;
+			}
 
-            for (int i = 0; i < result.Length; i++)
-            {
-                temp = Functions.Modulo(data[i] + a, 256);
+			return result;
+		}
 
-                result[i] = (byte)temp;
-            }
+		/// <inheritdoc/>
+		public override string Decrypt(string text)
+		{
+			a = -a;
+			string result = Encrypt(text);
+			a = -a;
 
-            return result;
-        }
+			return result;
+		}
 
-        /// <inheritdoc/>
-        public override byte[] Decrypt(byte[] data)
-        {
-            a = -a;
-            byte[] result = Encrypt(data);
-            a = -a;
+		/// <inheritdoc/>
+		public override byte[] Encrypt(byte[] data)
+		{
+			byte[] result = new byte[data.Length];
+			int temp;
 
-            return result;
-        }
+			for (int i = 0; i < result.Length; i++)
+			{
+				temp = Functions.Modulo(data[i] + a, 256);
 
-        #endregion
-    }
+				result[i] = (byte)temp;
+			}
+
+			return result;
+		}
+
+		/// <inheritdoc/>
+		public override byte[] Decrypt(byte[] data)
+		{
+			a = -a;
+			byte[] result = Encrypt(data);
+			a = -a;
+
+			return result;
+		}
+
+		#endregion
+	}
 }
