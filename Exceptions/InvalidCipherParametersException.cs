@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Exceptions
+namespace OldCrypt.Library.Exceptions
 {
 	/// <summary>
 	/// An <see cref="Exception"/> that is thrown when cipher parameters are not valid for the selected cipher.
@@ -18,6 +18,14 @@ namespace OldCrypt_Library.Exceptions
 		/// </summary>
 		/// <param name="message">The message to be included.</param>
 		public InvalidCipherParametersException(string message) : base(message)
+		{ }
+
+		/// <summary>
+		/// Creates a new instance of <see cref="InvalidCipherParametersException"/> with the specified message and inner exception.
+		/// </summary>
+		/// <param name="message">The message to be included.</param>
+		/// <param name="innerException">The inner exception.</param>
+		public InvalidCipherParametersException(string message, Exception innerException) : base(message, innerException)
 		{ }
 	}
 }

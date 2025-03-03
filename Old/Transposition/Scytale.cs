@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.IO;
 
-namespace OldCrypt_Library.Old.Transposition
+namespace OldCrypt.Library.Old.Transposition
 {
 	public class Scytale : Cipher
 	{
@@ -14,10 +15,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <exception cref="Exceptions.InvalidCipherParametersException" />
 		public Scytale(int columnCount)
 		{
-			if (columnCount > 0)
-				this.columnCount = columnCount;
-			else
-				throw new Exceptions.InvalidCipherParametersException(nameof(columnCount) + " must be higher than 0.");
+			this.columnCount = columnCount > 0
+				? columnCount
+				: throw new Exceptions.InvalidCipherParametersException(nameof(columnCount) + " must be higher than 0.");
 		}
 
 		/// <summary>
@@ -31,7 +31,7 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override string Encrypt(string text)
 		{
-			text = base.ApplyIgnoreSpaceAndCase(text);
+			text = ApplyIgnoreSpaceAndCase(text);
 
 			if (columnCount > 0)
 			{
@@ -49,9 +49,9 @@ namespace OldCrypt_Library.Old.Transposition
 
 				for (int y = 0; y < lineCount; y++)
 				{
-					for (int x = 0; x < columnCount && y * columnCount + x < text.Length; x++)
+					for (int x = 0; x < columnCount && (y * columnCount) + x < text.Length; x++)
 					{
-						lines[y] += text[y * columnCount + x];
+						lines[y] += text[(y * columnCount) + x];
 					}
 				}
 
@@ -78,6 +78,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
+			if (text == null)
+				throw new ArgumentNullException(nameof(text));
+
 			if (columnCount > 0)
 			{
 				string result = "";
@@ -135,6 +138,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (columnCount > 0)
 			{
 				byte[] output = new byte[data.Length];
@@ -151,9 +157,9 @@ namespace OldCrypt_Library.Old.Transposition
 
 				for (int y = 0; y < lineCount; y++)
 				{
-					for (int x = 0; x < columnCount && y * columnCount + x < data.Length; x++)
+					for (int x = 0; x < columnCount && (y * columnCount) + x < data.Length; x++)
 					{
-						lines[y].Add(data[y * columnCount + x]);
+						lines[y].Add(data[(y * columnCount) + x]);
 					}
 				}
 
@@ -187,6 +193,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override byte[] Decrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (columnCount > 0)
 			{
 				byte[] output = new byte[data.Length];
@@ -246,28 +255,23 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		protected override bool FileHandler(BinaryReader input, BinaryWriter output, bool encrypt)
 		{
-			try
-			{
-				long fileSize = input.BaseStream.Length;
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
 
-				if (fileSize > int.MaxValue)
-					return false;
+			long fileSize = input.BaseStream.Length;
 
-				byte[] bytes = input.ReadBytes((int)fileSize);
-
-				if (encrypt)
-					bytes = Encrypt(bytes);
-				else
-					bytes = Decrypt(bytes);
-
-				output.Write(bytes);
-
-				progress = 1;
-			}
-			catch
-			{
+			if (fileSize > int.MaxValue)
 				return false;
-			}
+
+			byte[] bytes = input.ReadBytes((int)fileSize);
+
+			bytes = encrypt ? Encrypt(bytes) : Decrypt(bytes);
+
+			output.Write(bytes);
+
+			Progress = 1;
 
 			return true;
 		}

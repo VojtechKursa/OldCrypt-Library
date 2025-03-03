@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library
+namespace OldCrypt.Library
 {
 	/// <summary>
 	/// A class that contains various useful functions for simplification of other places in the program.
@@ -14,11 +14,14 @@ namespace OldCrypt_Library
 		/// <returns><see cref="string"/> containing the converted array.</returns>
 		public static string ToHex(byte[] data)
 		{
+			if (data == null)
+				return "";
+
 			string result = "";
 
 			foreach (byte x in data)
 			{
-				result += Convert.ToString(x, 16).ToUpper().PadLeft(2, '0');
+				result += Convert.ToString(x, 16).ToUpperInvariant().PadLeft(2, '0');
 			}
 
 			return result;
@@ -34,6 +37,9 @@ namespace OldCrypt_Library
 		/// <exception cref="ArgumentException"/>
 		public static byte[] ToByte(string hex)
 		{
+			if (hex == null)
+				hex = "";
+
 			if (hex.Length % 2 != 0)
 				hex = "0" + hex;
 
@@ -83,8 +89,10 @@ namespace OldCrypt_Library
 		/// <!-- Source: https://stackoverflow.com/questions/18541832/c-sharp-find-the-greatest-common-divisor -->
 		public static int GreatestCommonDivisor(int a, int b)
 		{
-			if (a < 1 || b < 1)
-				throw new ArgumentOutOfRangeException();
+			if (a < 1)
+				throw new ArgumentOutOfRangeException(nameof(a));
+			if (b < 1)
+				throw new ArgumentOutOfRangeException(nameof(b));
 
 			while (a != 0 && b != 0)
 			{
@@ -120,7 +128,7 @@ namespace OldCrypt_Library
 				n = m % x;
 				m = x;
 				x = d;
-				d = checked(v - t * x); // Just in case
+				d = checked(v - (t * x)); // Just in case
 				v = x;
 			}
 			result = v % modulo;

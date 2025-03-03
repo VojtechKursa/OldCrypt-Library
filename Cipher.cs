@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace OldCrypt_Library
+namespace OldCrypt.Library
 {
 	/// <summary>
 	/// A base class for all encryption methods in the <see cref="OldCrypt_Library"/>.
@@ -13,7 +13,8 @@ namespace OldCrypt_Library
 		/// <summary>
 		/// A value that stores the progress of the current encryption or decryption operation as a <see cref="double"/> between 0 and 1
 		/// </summary>
-		protected double progress = 0;
+		/// <returns>The progress of the current operation.</returns>
+		public double Progress { get; protected set; }
 
 		/// <summary>
 		/// A value indicating whether strict input filtering should be used. This has effect only on the <see cref="Encrypt(string)"/> method.<br />
@@ -21,64 +22,21 @@ namespace OldCrypt_Library
 		/// On/True - Characters unsupported by the cipher (characters that cannot be encrypted) are dropped during the encryption process.<br />
 		/// Off/False - Characters unsupported by the cipher are, if possible, passed to the output without change.
 		/// </summary>
-		protected bool strict = true;
+		public bool Strict { get; set; }
 
 		/// <summary>
 		/// A value indicating whether the case of the characters should be ignored or respected during the encryption.<br />
 		/// If true, the output should be all upper-case.<br />
 		/// If false, the output should have the same case as the input, if possible.
 		/// </summary>
-		protected bool ignoreCase = true;
+		public bool IgnoreCase { get; set; }
 
 		/// <summary>
 		/// A value indicating whether spaces should be ignored during the encryption.<br />
 		/// If true, the output should be without whitespaces.<br />
 		/// If false, the output should have whitespaces in the correct position so they reappear correctly after decryption.
 		/// </summary>
-		protected bool ignoreSpace = true;
-
-		#endregion
-
-		#region Getters and Setters
-
-		/// <summary>
-		/// Gets the progress of the current encryption or decryption operation as a value between 0 and 1.
-		/// </summary>
-		/// <returns>The progress of the current operation.</returns>
-		public double Progress
-		{
-			get { return progress; }
-		}
-
-		/// <summary>
-		/// Gets or sets <inheritdoc cref="strict"/>
-		/// </summary>
-		/// <returns>True if strict mode is on, otherwise false.</returns>
-		public bool Strict
-		{
-			get { return strict; }
-			set { strict = value; }
-		}
-
-		/// <summary>
-		/// Gets or sets <inheritdoc cref="ignoreCase"/>
-		/// </summary>
-		/// <returns>True if IgnoreCase option is on, otherwise false.</returns>
-		public bool IgnoreCase
-		{
-			get { return ignoreCase; }
-			set { ignoreCase = value; }
-		}
-
-		/// <summary>
-		/// Gets or sets <inheritdoc cref="ignoreSpace"/>
-		/// </summary>
-		/// <returns>True if IgnoreSpace option is on, otherwise false.</returns>
-		public bool IgnoreSpace
-		{
-			get { return ignoreSpace; }
-			set { ignoreSpace = value; }
-		}
+		public bool IgnoreSpace { get; set; }
 
 		#endregion
 
@@ -143,35 +101,29 @@ namespace OldCrypt_Library
 		/// <exception cref="Exceptions.CipherUnavailableException" />
 		/// <exception cref="Exceptions.InvalidCipherParametersException" />
 		/// <exception cref="Exceptions.InvalidInputException" />
+		/// <exception cref="ArgumentNullException" />
 		protected virtual bool FileHandler(BinaryReader input, BinaryWriter output, bool encrypt)
 		{
-			try
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
+
+			long fileSize = input.BaseStream.Length;
+			long processed = 0;
+			byte[] bytes;
+
+			while (processed < fileSize)
 			{
-				long fileSize = input.BaseStream.Length;
-				long processed = 0;
-				byte[] bytes;
+				bytes = fileSize - processed >= 1024 ? input.ReadBytes(1024) : input.ReadBytes((int)(fileSize - processed));
 
-				while (processed < fileSize)
-				{
-					if (fileSize - processed >= 1024)
-						bytes = input.ReadBytes(1024);
-					else
-						bytes = input.ReadBytes((int)(fileSize - processed));
+				bytes = encrypt ? Encrypt(bytes) : Decrypt(bytes);
 
-					if (encrypt)
-						bytes = Encrypt(bytes);
-					else
-						bytes = Decrypt(bytes);
+				output.Write(bytes);
 
-					output.Write(bytes);
-
-					processed += bytes.Length;
-					progress = (double)processed / fileSize;
-				}
-			}
-			catch
-			{
-				return false;
+				processed += bytes.Length;
+				Progress = (double)processed / fileSize;
 			}
 
 			return true;
@@ -204,9 +156,9 @@ namespace OldCrypt_Library
 		/// <returns>Processed <i>text</i>, that has all whitespaces removed if <see cref="ignoreSpace"/> is <i>true</i> and all characters converted to upper-case if <see cref="ignoreCase"/> is <i>true</i>.</returns>
 		protected string ApplyIgnoreSpaceAndCase(string text)
 		{
-			string returnValue = text;
+			string returnValue = text ?? "";
 
-			if (ignoreSpace)
+			if (IgnoreSpace)
 			{
 				while (returnValue.Contains(" "))
 				{
@@ -214,8 +166,8 @@ namespace OldCrypt_Library
 				}
 			}
 
-			if (ignoreCase)
-				returnValue = returnValue.ToUpper();
+			if (IgnoreCase)
+				returnValue = returnValue.ToUpperInvariant();
 
 			return returnValue;
 		}
@@ -230,10 +182,10 @@ namespace OldCrypt_Library
 		{
 			if (invalidCharacter == ' ')
 			{
-				if (!ignoreSpace)
+				if (!IgnoreSpace)
 					input += invalidCharacter;
 			}
-			else if (!strict)
+			else if (!Strict)
 				input += invalidCharacter;
 
 			return input;

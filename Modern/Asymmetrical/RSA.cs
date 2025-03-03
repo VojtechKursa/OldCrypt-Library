@@ -1,32 +1,35 @@
+using OldCrypt.Library.Exceptions;
 using System;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace OldCrypt_Library.Modern.Asymmetrical
+namespace OldCrypt.Library.Modern.Asymmetrical
 {
 	public class RSA : AsymmetricalCipher
 	{
-		protected readonly System.Security.Cryptography.RSA rsa;
+		protected System.Security.Cryptography.RSA Rsa { get; }
 		public RSAEncryptionPadding DefaultPaddingMode { get; set; } = RSAEncryptionPadding.OaepSHA256;
 
 		#region Constructors
 
 		public RSA()
 		{
-			rsa = System.Security.Cryptography.RSA.Create();
-			algorithm = rsa;
+			Rsa = System.Security.Cryptography.RSA.Create();
+			Algorithm = Rsa;
 		}
 
 		public RSA(int keySizeInBits)
 		{
-			rsa = System.Security.Cryptography.RSA.Create(keySizeInBits);
-			algorithm = rsa;
+			Rsa = System.Security.Cryptography.RSA.Create();
+			Rsa.KeySize = keySizeInBits;
+			Algorithm = Rsa;
 		}
 
 		public RSA(RSAParameters parameters)
 		{
-			rsa = System.Security.Cryptography.RSA.Create(parameters);
-			algorithm = rsa;
+			Rsa = System.Security.Cryptography.RSA.Create();
+			Rsa.ImportParameters(parameters);
+			Algorithm = Rsa;
 		}
 
 		#endregion
@@ -66,10 +69,13 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <inheritdoc cref="Cipher.Encrypt(byte[])"/>
 		public virtual byte[] Encrypt(byte[] data, RSAEncryptionPadding padding)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			//Preparation
 			int blockSize = MaxEncryptableDataSize(padding);
 			if (blockSize < 1)
-				throw new Exceptions.InvalidCipherParametersException(String.Format("Encryption not possible using current {0} and selected padding mode.", nameof(KeySize)));
+				throw new Exceptions.InvalidCipherParametersException($"Encryption not possible using current {nameof(KeySize)} and selected padding mode.");
 
 			int lastBlockStartIndex = data.Length - (data.Length % blockSize);
 			int numberOfBlocks = lastBlockStartIndex / blockSize;   //Number of blocks without the last one
@@ -89,7 +95,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 					preBuffer[x] = data[i + x];
 				}
 
-				postBuffer = rsa.Encrypt(preBuffer, padding);
+				postBuffer = Rsa.Encrypt(preBuffer, padding);
 				postBuffer.CopyTo(resultBuffer, currentBlockNumber * KeySizeByte);
 
 				currentBlockNumber++;
@@ -102,7 +108,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 				preBuffer[i - lastBlockStartIndex] = data[i];
 			}
 
-			postBuffer = rsa.Encrypt(preBuffer, padding);
+			postBuffer = Rsa.Encrypt(preBuffer, padding);
 			postBuffer.CopyTo(resultBuffer, currentBlockNumber * KeySizeByte);
 
 			return resultBuffer;
@@ -116,6 +122,9 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <inheritdoc cref="Cipher.Decrypt(byte[])"/>
 		public virtual byte[] Decrypt(byte[] data, RSAEncryptionPadding padding)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (data.Length % KeySizeByte == 0)
 			{
 				try
@@ -124,7 +133,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 					int blockSize = KeySizeByte;
 
 					int lastBlockStartIndex = data.Length - blockSize;
-					int numberOfBlocks = data.Length / KeySizeByte - 1; //Number of blocks except the last one
+					int numberOfBlocks = (data.Length / KeySizeByte) - 1; //Number of blocks except the last one
 					int dataBlockSize = MaxEncryptableDataSize(padding);
 
 					byte[] resultBuffer = new byte[numberOfBlocks * dataBlockSize];
@@ -142,7 +151,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 							preBuffer[x] = data[i + x];
 						}
 
-						postBuffer = rsa.Decrypt(preBuffer, padding);
+						postBuffer = Rsa.Decrypt(preBuffer, padding);
 						postBuffer.CopyTo(resultBuffer, dataBlockSize * currentBlockNumber);
 
 						currentBlockNumber++;
@@ -155,7 +164,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 						preBuffer[i - lastBlockStartIndex] = data[i];
 					}
 
-					postBuffer = rsa.Decrypt(preBuffer, padding);
+					postBuffer = Rsa.Decrypt(preBuffer, padding);
 
 
 					//Final completion
@@ -171,7 +180,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 				}
 			}
 			else
-				throw new Exceptions.InvalidInputException(String.Format("Invalid data, the input data must have length that's a multiple of {0} during decryption.", nameof(KeySizeByte)));
+				throw new Exceptions.InvalidInputException($"Invalid data, the input data must have length that's a multiple of {nameof(KeySizeByte)} during decryption.");
 		}
 
 		protected override bool FileHandler(BinaryReader input, BinaryWriter output, bool encrypt)
@@ -181,12 +190,17 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 
 		protected bool FileHandler(BinaryReader input, BinaryWriter output, bool encrypt, RSAEncryptionPadding padding)
 		{
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
+
 			long dataLength = input.BaseStream.Length;
 
 			if (!encrypt)
 			{
 				if (dataLength % KeySizeByte != 0)
-					throw new Exceptions.InvalidInputException(String.Format("Invalid data, the input data must have length that's a multiple of {0} during decryption.", nameof(KeySizeByte)));
+					throw new Exceptions.InvalidInputException($"Invalid data, the input data must have length that's a multiple of {nameof(KeySizeByte)} during decryption.");
 
 				//TO DO: Add checking for private key
 			}
@@ -194,7 +208,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 			//Preparation
 			int step = encrypt ? MaxEncryptableDataSize(padding) : KeySizeByte;
 			if (step < 1)
-				throw new Exceptions.InvalidCipherParametersException(String.Format("Encryption not possible using current {0} and selected padding mode.", nameof(KeySize)));
+				throw new Exceptions.InvalidCipherParametersException($"Encryption not possible using current {nameof(KeySize)} and selected padding mode.");
 
 			long lastBlockStartIndex = encrypt ? dataLength - (dataLength % step) : dataLength - step;
 
@@ -207,7 +221,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 			{
 				preBuffer = input.ReadBytes(step);
 
-				postBuffer = encrypt ? rsa.Encrypt(preBuffer, padding) : rsa.Decrypt(preBuffer, padding);
+				postBuffer = encrypt ? Rsa.Encrypt(preBuffer, padding) : Rsa.Decrypt(preBuffer, padding);
 
 				output.Write(postBuffer);
 			}
@@ -215,7 +229,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 			//Last block
 			preBuffer = input.ReadBytes((int)(dataLength - lastBlockStartIndex));
 
-			postBuffer = encrypt ? rsa.Encrypt(preBuffer, padding) : rsa.Decrypt(preBuffer, padding);
+			postBuffer = encrypt ? Rsa.Encrypt(preBuffer, padding) : Rsa.Decrypt(preBuffer, padding);
 
 			output.Write(postBuffer);
 
@@ -234,7 +248,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <returns>The parameters used by the current instance of <see cref="RSA"/> cipher.</returns>
 		public RSAParameters GetParameters(bool includePrivateParameters)
 		{
-			return rsa.ExportParameters(includePrivateParameters);
+			return Rsa.ExportParameters(includePrivateParameters);
 		}
 
 		/// <summary>
@@ -245,7 +259,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <param name="parameters">Parameters to be used.</param>
 		public void SetParameters(RSAParameters parameters)
 		{
-			rsa.ImportParameters(parameters);
+			Rsa.ImportParameters(parameters);
 		}
 
 		/// <summary>
@@ -256,7 +270,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <returns>The parameters used by the current instance of <see cref="RSA"/> cipher, in XML string format.</returns>
 		public string GetParametersXML(bool includePrivateParameters)
 		{
-			return rsa.ToXmlString(includePrivateParameters);
+			return Rsa.ToXmlString(includePrivateParameters);
 		}
 
 		/// <summary>
@@ -267,7 +281,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <param name="parameters">Parameters to be used, in XML string format.</param>
 		public void SetParametersXML(string parameters)
 		{
-			rsa.FromXmlString(parameters);
+			Rsa.FromXmlString(parameters);
 		}
 
 		#endregion
@@ -314,10 +328,10 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 				else if (padding == RSAEncryptionPadding.OaepSHA512)
 					hashLength = 64;
 
-				return 2 * hashLength + 2;
+				return (2 * hashLength) + 2;
 			}
 			else
-				throw new Exception("The selected padding sheme is not supported by this method.");
+				throw new UnsupportedPaddingException("The selected padding sheme is not supported by this method.");
 		}
 
 		#endregion

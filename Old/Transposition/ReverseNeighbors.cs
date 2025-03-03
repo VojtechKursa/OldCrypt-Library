@@ -1,11 +1,13 @@
-﻿namespace OldCrypt_Library.Old.Transposition
+﻿using System;
+
+namespace OldCrypt.Library.Old.Transposition
 {
 	public class ReverseNeighbors : Cipher
 	{
 		/// <inheritdoc/>
 		public override string Encrypt(string text)
 		{
-			text = base.ApplyIgnoreSpaceAndCase(text);
+			text = ApplyIgnoreSpaceAndCase(text);
 
 			string result = "";
 
@@ -19,7 +21,7 @@
 				else
 					result += text[i];
 
-				progress = (double)result.Length / text.Length;
+				Progress = (double)result.Length / text.Length;
 			}
 
 			return result;
@@ -34,6 +36,9 @@
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			byte[] result = new byte[data.Length];
 
 			for (int i = 0; i < data.Length; i += 2)

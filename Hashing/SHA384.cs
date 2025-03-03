@@ -1,10 +1,10 @@
-﻿namespace OldCrypt_Library.Hashing
+﻿namespace OldCrypt.Library.Hashing
 {
 	public class SHA384 : Hash
 	{
 		public SHA384()
 		{
-			hashAlgorithm = System.Security.Cryptography.SHA384.Create();
+			HashAlgorithm = System.Security.Cryptography.SHA384.Create();
 		}
 	}
 }

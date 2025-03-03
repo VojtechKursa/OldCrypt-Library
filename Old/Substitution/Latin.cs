@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace OldCrypt_Library.Old.Substitution
+namespace OldCrypt.Library.Old.Substitution
 {
 	public class Latin : Cipher
 	{
@@ -15,19 +15,19 @@ namespace OldCrypt_Library.Old.Substitution
 		{
 			text = ApplyIgnoreSpaceAndCase(text);
 
-			text = text.ToUpper();
+			text = text.ToUpperInvariant();
 			string result = "";
 
 			foreach (char x in text)
 			{
 				if (x == ' ')
 					result += " ";
-				else if (x > 64 && x < 91)
-					result += (x - 64).ToString() + " ";
+				else if (x >= 'A' && x <= 'Z')
+					result += $"{x - 'A'}" + " ";
 				else
 					throw new Exceptions.InvalidInputException("The Latin code only supports latin letters (a - z and A - Z) and whitespace (' ').");
 
-				progress = (double)result.Length / text.Length;
+				Progress = (double)result.Length / text.Length;
 			}
 
 			return result.Remove(result.Length - 1);
@@ -40,30 +40,33 @@ namespace OldCrypt_Library.Old.Substitution
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
+			if (text == null)
+				return "";
+
 			string result = "";
 			string[] textSplit = text.Split(' ');
-			int value;
 
 			try
 			{
 				foreach (string x in textSplit)
 				{
-					if (x == "")
+					if (string.IsNullOrEmpty(x))
 						result += " ";
 					else
 					{
-						value = Convert.ToInt32(x);
+						if (!Int32.TryParse(x, out int value))
+							return "Error! Invalid input!";
 
 						if (value > 0 && value < 27)
-							result += Convert.ToChar(value + 64);
+							result += Convert.ToChar(value + 'A');
 						else
 							throw new Exceptions.InvalidInputException("The Latin code only supports latin letters (a - z and A - Z) and whitespace (' ').");
 					}
 
-					progress = (double)result.Length / text.Length;
+					Progress = (double)result.Length / text.Length;
 				}
 			}
-			catch
+			catch (OverflowException)
 			{
 				return "Error! Invalid input!";
 			}

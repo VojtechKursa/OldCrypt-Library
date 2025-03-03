@@ -1,27 +1,19 @@
 using System;
 using System.Collections.Generic;
 
-namespace OldCrypt_Library.Data
+namespace OldCrypt.Library.Data
 {
 	/// <summary>
 	/// The base class for <see cref="PolybiusTable"/> and <see cref="PlayfairTable"/>.
 	/// </summary>
 	public class PolybiusSquare
 	{
-		protected Table table;
+		public Table Table { get; protected set; }
 
 		/// <summary>
-		/// Gets the table.
+		/// Generates a new table based on the specified key and sets it as <see cref="Table"/>.
 		/// </summary>
-		public Table Table
-		{
-			get { return table; }
-		}
-
-		/// <summary>
-		/// Generates a new table based on the specified key and sets it as <see cref="table"/>.
-		/// </summary>
-		/// <param name="key">The key based on which the <see cref="table"/> is to be generated.</param>
+		/// <param name="key">The key based on which the <see cref="Table"/> is to be generated.</param>
 		protected void GenerateTable(string key)
 		{
 			char[,] table = new char[5, 5];
@@ -32,7 +24,7 @@ namespace OldCrypt_Library.Data
 
 			if (key == null)
 				key = "";
-			key = key.ToUpper().Replace('J', 'I');
+			key = key.ToUpperInvariant().Replace('J', 'I');
 
 			int insertedChars = 0;
 			foreach (char x in key)
@@ -68,7 +60,7 @@ namespace OldCrypt_Library.Data
 				}
 			}
 
-			this.table = new Table(table);
+			Table = new Table(table);
 		}
 	}
 }

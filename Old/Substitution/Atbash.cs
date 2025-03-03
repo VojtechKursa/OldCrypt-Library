@@ -1,4 +1,6 @@
-﻿namespace OldCrypt_Library.Old.Substitution
+﻿using System;
+
+namespace OldCrypt.Library.Old.Substitution
 {
 	public class Atbash : Cipher
 	{
@@ -26,7 +28,7 @@
 
 				if (x > 96 && x < 123)
 				{
-					temp = (25 - (temp - 97)) + 97;
+					temp = 25 - (temp - 97) + 97;
 
 					if (wasUpper)
 						temp -= 32;
@@ -36,7 +38,7 @@
 				else
 					HandleInvalidCharacter(result, x);
 
-				progress = (double)result.Length / text.Length;
+				Progress = (double)result.Length / text.Length;
 			}
 
 			return result;
@@ -51,6 +53,9 @@
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			byte[] result = new byte[data.Length];
 
 			for (int i = 0; i < data.Length; i++)

@@ -1,11 +1,13 @@
-﻿namespace OldCrypt_Library.Old.Substitution
+﻿using System;
+
+namespace OldCrypt.Library.Old.Substitution
 {
 	public class Affine : Cipher
 	{
 		#region Values
 
-		protected int a;
-		protected int b;
+		public int A { get; protected set; }
+		public int B { get; protected set; }
 
 		#endregion
 
@@ -13,22 +15,8 @@
 
 		public Affine(int a, int b)
 		{
-			this.a = a;
-			this.b = b;
-		}
-
-		#endregion
-
-		#region Getters and Setters
-
-		public int A
-		{
-			get { return a; }
-		}
-
-		public int B
-		{
-			get { return b; }
+			A = a;
+			B = b;
 		}
 
 		#endregion
@@ -44,9 +32,9 @@
 		{
 			text = ApplyIgnoreSpaceAndCase(text);
 
-			if (a > 0)
+			if (A > 0)
 			{
-				if (Functions.GreatestCommonDivisor(a, 26) == 1)
+				if (Functions.GreatestCommonDivisor(A, 26) == 1)
 				{
 					string result = "";
 					bool wasUpper;
@@ -67,13 +55,13 @@
 
 						if (x > 96 && x < 123)
 						{
-							temp = Functions.Modulo(a * (temp - 97) + b, 26) + 97;
+							temp = Functions.Modulo((A * (temp - 97)) + B, 26) + 97;
 							result += wasUpper ? (char)(temp - 32) : (char)temp;
 						}
 						else
 							HandleInvalidCharacter(result, x);
 
-						progress = (double)result.Length / text.Length;
+						Progress = (double)result.Length / text.Length;
 					}
 
 					return result;
@@ -92,9 +80,12 @@
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
-			if (a > 0)
+			if (text == null)
+				throw new ArgumentNullException(nameof(text));
+
+			if (A > 0)
 			{
-				if (Functions.TryModInverse(a, 26, out int inverseA))
+				if (Functions.TryModInverse(A, 26, out int inverseA))
 				{
 					string result = "";
 					bool wasUpper;
@@ -115,14 +106,14 @@
 
 						if (x > 96 && x < 123)
 						{
-							temp = Functions.Modulo(inverseA * ((temp - 97) - b), 26) + 97;
+							temp = Functions.Modulo(inverseA * (temp - 97 - B), 26) + 97;
 
 							result += wasUpper ? (char)(temp - 32) : (char)temp;
 						}
 						else
 							result += x;
 
-						progress = (double)result.Length / text.Length;
+						Progress = (double)result.Length / text.Length;
 					}
 
 					return result;
@@ -141,15 +132,18 @@
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
-			if (a > 0)
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
+			if (A > 0)
 			{
-				if (Functions.GreatestCommonDivisor(a, 256) == 1)
+				if (Functions.GreatestCommonDivisor(A, 256) == 1)
 				{
 					byte[] result = new byte[data.Length];
 
 					for (int i = 0; i < data.Length; i++)
 					{
-						result[i] = (byte)Functions.Modulo(a * data[i] + b, 256);
+						result[i] = (byte)Functions.Modulo((A * data[i]) + B, 256);
 					}
 
 					return result;
@@ -168,15 +162,18 @@
 		/// <inheritdoc/>
 		public override byte[] Decrypt(byte[] data)
 		{
-			if (a > 0)
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
+			if (A > 0)
 			{
-				if (Functions.TryModInverse(a, 26, out int inverseA))
+				if (Functions.TryModInverse(A, 26, out int inverseA))
 				{
 					byte[] result = new byte[data.Length];
 
 					for (int i = 0; i < data.Length; i++)
 					{
-						result[i] = (byte)Functions.Modulo(inverseA * (data[i] - b), 256);
+						result[i] = (byte)Functions.Modulo(inverseA * (data[i] - B), 256);
 					}
 
 					return result;

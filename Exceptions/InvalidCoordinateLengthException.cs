@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Exceptions
+namespace OldCrypt.Library.Exceptions
 {
 	/// <summary>
 	/// An <see cref="Exception"/> that is thrown when a table lookup is attempted with an array of coordinates that has <see cref="Array.Length"/> not equal to the <see cref="Array.Rank"/> of the table.
@@ -18,6 +18,14 @@ namespace OldCrypt_Library.Exceptions
 		/// </summary>
 		/// <param name="message">The message to be included.</param>
 		public InvalidCoordinateLengthException(string message) : base(message)
+		{ }
+
+		/// <summary>
+		/// Creates a new instance of <see cref="InvalidCoordinateLengthException"/> with the specified message and inner exception.
+		/// </summary>
+		/// <param name="message">The message to be included.</param>
+		/// <param name="innerException">The inner exception.</param>
+		public InvalidCoordinateLengthException(string message, Exception innerException) : base(message, innerException)
 		{ }
 	}
 }

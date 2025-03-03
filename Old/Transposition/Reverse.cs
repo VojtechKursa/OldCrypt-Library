@@ -1,13 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
-namespace OldCrypt_Library.Old.Transposition
+namespace OldCrypt.Library.Old.Transposition
 {
 	public class Reverse : Cipher
 	{
 		/// <inheritdoc/>
 		public override string Encrypt(string text)
 		{
-			text = base.ApplyIgnoreSpaceAndCase(text);
+			text = ApplyIgnoreSpaceAndCase(text);
 
 			string result = "";
 
@@ -15,7 +16,7 @@ namespace OldCrypt_Library.Old.Transposition
 			{
 				result += text[i];
 
-				progress = (double)result.Length / text.Length;
+				Progress = (double)result.Length / text.Length;
 			}
 
 			return result;
@@ -30,24 +31,22 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override bool EncryptFile(BinaryReader input, BinaryWriter output)
 		{
-			try
-			{
-				Stream inputStream = input.BaseStream;
-				long processed = 0;
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
 
-				inputStream.Position = inputStream.Length - 1;
-				while (inputStream.Position > -1)
-				{
-					output.Write(inputStream.ReadByte());
-					inputStream.Position -= 2;
-					processed++;
+			Stream inputStream = input.BaseStream;
+			long processed = 0;
 
-					progress = (double)processed / inputStream.Length;
-				}
-			}
-			catch
+			inputStream.Position = inputStream.Length - 1;
+			while (inputStream.Position > -1)
 			{
-				return false;
+				output.Write(inputStream.ReadByte());
+				inputStream.Position -= 2;
+				processed++;
+
+				Progress = (double)processed / inputStream.Length;
 			}
 
 			return true;
@@ -62,6 +61,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			byte[] result = new byte[data.Length];
 			int lastIndex = 0;
 
@@ -70,7 +72,7 @@ namespace OldCrypt_Library.Old.Transposition
 				result[lastIndex] = data[i];
 				lastIndex++;
 
-				progress = (double)lastIndex / data.Length;
+				Progress = (double)lastIndex / data.Length;
 			}
 
 			return result;

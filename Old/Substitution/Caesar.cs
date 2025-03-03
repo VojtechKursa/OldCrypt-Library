@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Old.Substitution
+namespace OldCrypt.Library.Old.Substitution
 {
 	public class Caesar : Cipher
 	{
@@ -66,7 +66,7 @@ namespace OldCrypt_Library.Old.Substitution
 
 				if (temp > 96 && temp < 123)
 				{
-					temp = Functions.Modulo((temp - 97) + a, 26);
+					temp = Functions.Modulo(temp - 97 + a, 26);
 
 					temp += 97;
 				}
@@ -75,7 +75,7 @@ namespace OldCrypt_Library.Old.Substitution
 
 				result += wasUpper ? Convert.ToChar(temp - 32) : Convert.ToChar(temp);
 
-				progress = (double)result.Length / text.Length;
+				Progress = (double)result.Length / text.Length;
 			}
 
 			return result;
@@ -94,6 +94,9 @@ namespace OldCrypt_Library.Old.Substitution
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			byte[] result = new byte[data.Length];
 			int temp;
 

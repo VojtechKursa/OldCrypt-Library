@@ -1,24 +1,19 @@
-﻿using OldCrypt_Library.Data;
+﻿using OldCrypt.Library.Data;
 
-namespace OldCrypt_Library.Old.Substitution
+namespace OldCrypt.Library.Old.Substitution
 {
 	public class Playfair : Cipher
 	{
-		protected PlayfairTable table;
+		public PlayfairTable Table { get; protected set; }
 
 		public Playfair()
 		{
-			table = new PlayfairTable();
+			Table = new PlayfairTable();
 		}
 
 		public Playfair(string key)
 		{
-			table = new PlayfairTable(key);
-		}
-
-		public PlayfairTable Table
-		{
-			get { return table; }
+			Table = new PlayfairTable(key);
 		}
 
 		/// <summary>
@@ -34,10 +29,10 @@ namespace OldCrypt_Library.Old.Substitution
 			char[] encryptedPair;
 			for (int i = 0; i < text.Length; i += 2)
 			{
-				encryptedPair = table.Encrypt(new char[] { text[i], text[i + 1] });
+				encryptedPair = Table.Encrypt(new char[] { text[i], text[i + 1] });
 				result += encryptedPair[0].ToString() + encryptedPair[1].ToString();
 
-				progress = (double)result.Length / text.Length;
+				Progress = (double)result.Length / text.Length;
 			}
 
 			return result;
@@ -50,9 +45,12 @@ namespace OldCrypt_Library.Old.Substitution
 		/// <param name="text">Text to prepare.</param>
 		/// <returns>Text prepared for encryption.</returns>
 		/// <exception cref="Exceptions.InvalidInputException" />
-		protected string PrepareForEncryption(string text)
+		protected static string PrepareForEncryption(string text)
 		{
-			string result = text.Replace(" ", "").ToUpper().Replace('J', 'I');
+			if (text == null)
+				return "";
+
+			string result = text.Replace(" ", "").ToUpperInvariant().Replace('J', 'I');
 
 			if (IsValid(result))
 			{
@@ -78,8 +76,11 @@ namespace OldCrypt_Library.Old.Substitution
 		/// </summary>
 		/// <param name="text">The text to check.</param>
 		/// <returns>True if the text is valid for the standard Playfair cipher, otherwise false.</returns>
-		protected bool IsValid(string text)
+		protected static bool IsValid(string text)
 		{
+			if (text == null)
+				return false;
+
 			foreach (char x in text)
 			{
 				if (x > 64 && x < 91)
@@ -99,10 +100,13 @@ namespace OldCrypt_Library.Old.Substitution
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
+			if (text == null)
+				return "";
+
 			if (text.Length % 2 != 0)
 				throw new Exceptions.InvalidInputException("The Playfair cipher decryption only supports even amount of characters.");
 
-			text = text.Replace(" ", "").ToUpper().Replace('J', 'I');
+			text = text.Replace(" ", "").ToUpperInvariant().Replace('J', 'I');
 
 			if (IsValid(text))
 			{
@@ -111,10 +115,10 @@ namespace OldCrypt_Library.Old.Substitution
 				char[] decryptedPair;
 				for (int i = 0; i < text.Length; i += 2)
 				{
-					decryptedPair = table.Decrypt(new char[] { text[i], text[i + 1] });
+					decryptedPair = Table.Decrypt(new char[] { text[i], text[i + 1] });
 					result += decryptedPair[0].ToString() + decryptedPair[1].ToString();
 
-					progress = (double)result.Length / text.Length;
+					Progress = (double)result.Length / text.Length;
 				}
 
 				return result;

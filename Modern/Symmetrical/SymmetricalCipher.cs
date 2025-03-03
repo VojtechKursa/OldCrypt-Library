@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OldCrypt_Library.Modern.Symmetrical
+namespace OldCrypt.Library.Modern.Symmetrical
 {
 	/// <summary>
 	/// Represents the base class for Symmetrical modern ciphers.
@@ -12,21 +12,25 @@ namespace OldCrypt_Library.Modern.Symmetrical
 	{
 		#region Values
 
-		protected SymmetricAlgorithm algorithm;
-		protected ICryptoTransform encryptor = null;
-		protected ICryptoTransform decryptor = null;
+		/// <summary>
+		/// Gets the reference to the current instance of the algorithm used.
+		/// </summary>
+		public SymmetricAlgorithm Algorithm { get; protected set; }
+
+		/// <summary>
+		/// Gets the current encryptor used by the current instance of <see cref="SymmetricalCipher"/>.
+		/// </summary>
+		public ICryptoTransform Encryptor { get; protected set; }
+
+		/// <summary>
+		/// Gets the current decryptor used by the current instance of <see cref="SymmetricalCipher"/>.
+		/// </summary>
+		public ICryptoTransform Decryptor { get; protected set; }
 
 		#endregion
 
 		#region Getters and Setters
 
-		/// <summary>
-		/// Gets the reference to the current instance of the algorithm used.
-		/// </summary>
-		public SymmetricAlgorithm Algorithm
-		{
-			get { return algorithm; }
-		}
 
 		#region Key
 
@@ -42,7 +46,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <exception cref="ArgumentNullException"/>
 		public byte[] Key
 		{
-			get { return algorithm.Key; }
+			get { return Algorithm.Key; }
 			set
 			{
 				if (value != null)
@@ -51,7 +55,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 						KeySizeByte = value.Length;
 				}
 
-				algorithm.Key = value;
+				Algorithm.Key = value;
 			}
 		}
 
@@ -64,13 +68,10 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <exception cref="Exceptions.InvalidKeySizeException" />
 		public int KeySize
 		{
-			get { return algorithm.KeySize; }
+			get { return Algorithm.KeySize; }
 			set
 			{
-				if (algorithm.ValidKeySize(value))
-					algorithm.KeySize = value;
-				else
-					throw new Exceptions.InvalidKeySizeException();
+				Algorithm.KeySize = Algorithm.ValidKeySize(value) ? value : throw new Exceptions.InvalidKeySizeException();
 			}
 		}
 
@@ -82,13 +83,10 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <exception cref="Exceptions.InvalidKeySizeException" />
 		public int KeySizeByte
 		{
-			get { return algorithm.KeySize / 8; }
+			get { return Algorithm.KeySize / 8; }
 			set
 			{
-				if (algorithm.ValidKeySize(value * 8))
-					algorithm.KeySize = value * 8;
-				else
-					throw new Exceptions.InvalidKeySizeException();
+				Algorithm.KeySize = Algorithm.ValidKeySize(value * 8) ? value * 8 : throw new Exceptions.InvalidKeySizeException();
 			}
 		}
 
@@ -98,7 +96,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc cref="SymmetricAlgorithm.LegalKeySizes"/>
 		public KeySizes[] ValidKeySizes
 		{
-			get { return algorithm.LegalKeySizes; }
+			get { return Algorithm.LegalKeySizes; }
 		}
 
 		#endregion
@@ -109,8 +107,8 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc cref="SymmetricAlgorithm.IV"/>
 		public byte[] IV
 		{
-			get { return algorithm.IV; }
-			set { algorithm.IV = value; }
+			get { return Algorithm.IV; }
+			set { Algorithm.IV = value; }
 		}
 
 		#region Block
@@ -123,8 +121,8 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <exception cref="CryptographicException"/>
 		public int BlockSize
 		{
-			get { return algorithm.BlockSize; }
-			set { algorithm.BlockSize = value; }
+			get { return Algorithm.BlockSize; }
+			set { Algorithm.BlockSize = value; }
 		}
 
 		/// <summary>
@@ -135,8 +133,8 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <exception cref="CryptographicException"/>
 		public int BlockSizeByte
 		{
-			get { return algorithm.BlockSize / 8; }
-			set { algorithm.BlockSize = value * 8; }
+			get { return Algorithm.BlockSize / 8; }
+			set { Algorithm.BlockSize = value * 8; }
 		}
 
 		/// <summary>
@@ -145,7 +143,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc cref="SymmetricAlgorithm.LegalBlockSizes"/>
 		public KeySizes[] ValidBlockSizes
 		{
-			get { return algorithm.LegalBlockSizes; }
+			get { return Algorithm.LegalBlockSizes; }
 		}
 
 		#endregion
@@ -153,33 +151,15 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc cref="SymmetricAlgorithm.Mode"/>
 		public CipherMode CipherMode
 		{
-			get { return algorithm.Mode; }
-			set { algorithm.Mode = value; }
+			get { return Algorithm.Mode; }
+			set { Algorithm.Mode = value; }
 		}
 
 		/// <inheritdoc cref="SymmetricAlgorithm.Padding"/>
 		public PaddingMode PaddingMode
 		{
-			get { return algorithm.Padding; }
-			set { algorithm.Padding = value; }
-		}
-
-		/// <summary>
-		/// Gets the current encryptor used by the current instance of <see cref="SymmetricalCipher"/>.
-		/// </summary>
-		/// <returns>Current encryptor used by this instance of <see cref="SymmetricalCipher"/>.</returns>
-		public ICryptoTransform Encryptor
-		{
-			get { return encryptor; }
-		}
-
-		/// <summary>
-		/// Gets the current decryptor used by the current instance of <see cref="SymmetricalCipher"/>.
-		/// </summary>
-		/// <returns>Current decryptor used by this instance of <see cref="SymmetricalCipher"/>.</returns>
-		public ICryptoTransform Decryptor
-		{
-			get { return decryptor; }
+			get { return Algorithm.Padding; }
+			set { Algorithm.Padding = value; }
 		}
 
 		#endregion
@@ -191,7 +171,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// </summary>
 		public void GenerateKey()
 		{
-			algorithm.GenerateKey();
+			Algorithm.GenerateKey();
 		}
 
 		/// <summary>
@@ -199,7 +179,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// </summary>
 		public void GenerateIV()
 		{
-			algorithm.GenerateIV();
+			Algorithm.GenerateIV();
 		}
 
 		/// <summary>
@@ -209,7 +189,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		{
 			ClearEncryptor();
 			ClearDecryptor();
-			algorithm.Clear();
+			Algorithm.Clear();
 		}
 
 		/// <inheritdoc cref="Clear"/>
@@ -226,7 +206,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		public void CreateEncryptor()
 		{
 			ClearEncryptor();
-			encryptor = algorithm.CreateEncryptor();
+			Encryptor = Algorithm.CreateEncryptor();
 		}
 
 		/// <summary>
@@ -234,10 +214,10 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// </summary>
 		public void ClearEncryptor()
 		{
-			if (encryptor != null)
+			if (Encryptor != null)
 			{
-				encryptor.Dispose();
-				encryptor = null;
+				Encryptor.Dispose();
+				Encryptor = null;
 			}
 		}
 
@@ -247,7 +227,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		public void CreateDecryptor()
 		{
 			ClearDecryptor();
-			decryptor = algorithm.CreateDecryptor();
+			Decryptor = Algorithm.CreateDecryptor();
 		}
 
 		/// <summary>
@@ -255,10 +235,10 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// </summary>
 		public void ClearDecryptor()
 		{
-			if (decryptor != null)
+			if (Decryptor != null)
 			{
-				decryptor.Dispose();
-				decryptor = null;
+				Decryptor.Dispose();
+				Decryptor = null;
 			}
 		}
 
@@ -306,11 +286,14 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (ValidSettingsAndInput(true, data.Length))
 			{
 				CreateEncryptor();
 
-				ICryptoTransform crypto = encryptor;
+				ICryptoTransform crypto = Encryptor;
 
 				int blockSizeInBytes = BlockSizeByte;
 				byte[] result = new byte[data.Length + (blockSizeInBytes - (data.Length % blockSizeInBytes))];
@@ -320,7 +303,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 				{
 					crypto.TransformBlock(data, i, blockSizeInBytes, result, i);
 
-					progress = (double)i / data.Length;
+					Progress = (double)i / data.Length;
 				}
 				byte[] final = crypto.TransformFinalBlock(data, finalBlockStartIndex, data.Length - finalBlockStartIndex);
 
@@ -329,7 +312,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 					result[finalBlockStartIndex + i] = final[i];
 				}
 
-				progress = 1;
+				Progress = 1;
 				return result;
 			}
 			else
@@ -346,11 +329,14 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc/>
 		public override byte[] Decrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (ValidSettingsAndInput(false, data.Length))
 			{
 				CreateDecryptor();
 
-				ICryptoTransform crypto = decryptor;
+				ICryptoTransform crypto = Decryptor;
 
 				int blockSizeInBytes = BlockSizeByte;
 				int finalBlockStartIndex = data.Length - blockSizeInBytes;
@@ -373,7 +359,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 				{
 					crypto.TransformBlock(data, i, blockSizeInBytes, buffer, i - start);
 
-					progress = (double)i / data.Length;
+					Progress = (double)i / data.Length;
 				}
 				byte[] final = crypto.TransformFinalBlock(data, finalBlockStartIndex, blockSizeInBytes);
 
@@ -393,78 +379,76 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		/// <inheritdoc/>
 		protected override bool FileHandler(BinaryReader input, BinaryWriter output, bool encrypt)
 		{
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
+
 			if (ValidSettingsAndInput(encrypt, input.BaseStream.Length))
 			{
-				try
+				ICryptoTransform crypto;
+
+				if (encrypt)
 				{
-					ICryptoTransform crypto;
+					CreateEncryptor();
 
-					if (encrypt)
-					{
-						CreateEncryptor();
+					crypto = Encryptor;
+				}
+				else
+				{
+					CreateDecryptor();
 
-						crypto = encryptor;
-					}
-					else
-					{
-						CreateDecryptor();
+					crypto = Decryptor;
+				}
 
-						crypto = decryptor;
-					}
+				int blockSizeInBytes = BlockSizeByte;
+				long fileSize = input.BaseStream.Length;
 
-					int blockSizeInBytes = BlockSizeByte;
-					long fileSize = input.BaseStream.Length;
+				long lastBlockStartIndex = fileSize - (fileSize % blockSizeInBytes);
+				if (!encrypt)
+					lastBlockStartIndex -= blockSizeInBytes;
 
-					long lastBlockStartIndex = fileSize - (fileSize % blockSizeInBytes);
-					if (!encrypt)
-						lastBlockStartIndex -= blockSizeInBytes;
+				int start = 0;
 
-					int start = 0;
+				//Drop the first block (that's caused to be all-zeros by these padding modes) during decryption
+				if (!encrypt && (PaddingMode == PaddingMode.PKCS7 || PaddingMode == PaddingMode.ANSIX923 || PaddingMode == PaddingMode.ISO10126))
+				{
+					byte[] dump = new byte[blockSizeInBytes];
+					crypto.TransformBlock(input.ReadBytes(blockSizeInBytes), 0, blockSizeInBytes, dump, 0);
 
-					//Drop the first block (that's caused to be all-zeros by these padding modes) during decryption
-					if (!encrypt && (PaddingMode == PaddingMode.PKCS7 || PaddingMode == PaddingMode.ANSIX923 || PaddingMode == PaddingMode.ISO10126))
-					{
-						byte[] dump = new byte[blockSizeInBytes];
-						crypto.TransformBlock(input.ReadBytes(blockSizeInBytes), 0, blockSizeInBytes, dump, 0);
+					start += blockSizeInBytes;
+				}
 
-						start += blockSizeInBytes;
-					}
+				byte[] bufferIn;
+				byte[] bufferOut;
+				for (long i = start; i < lastBlockStartIndex; i += blockSizeInBytes)
+				{
+					Progress = (double)i / fileSize;
 
-					byte[] bufferIn;
-					byte[] bufferOut;
-					for (long i = start; i < lastBlockStartIndex; i += blockSizeInBytes)
-					{
-						progress = (double)i / fileSize;
+					bufferIn = input.ReadBytes(blockSizeInBytes);
+					bufferOut = new byte[bufferIn.Length];
 
-						bufferIn = input.ReadBytes(blockSizeInBytes);
-						bufferOut = new byte[bufferIn.Length];
-
-						crypto.TransformBlock(bufferIn, 0, bufferIn.Length, bufferOut, 0);
-
-						output.Write(bufferOut);
-					}
-
-					bufferIn = input.ReadBytes((int)(fileSize - lastBlockStartIndex));
-					bufferOut = crypto.TransformFinalBlock(bufferIn, 0, bufferIn.Length);
-
-					if (!encrypt && PaddingMode == PaddingMode.Zeros)   //Remove padding null-bytes for PaddingMode.Zeros during decryption (Not done automatically by the crypto)
-						bufferOut = RemovePaddingZeros(bufferOut);
+					crypto.TransformBlock(bufferIn, 0, bufferIn.Length, bufferOut, 0);
 
 					output.Write(bufferOut);
+				}
 
-					progress = 1;
-					return true;
-				}
-				catch
-				{
-					return false;
-				}
+				bufferIn = input.ReadBytes((int)(fileSize - lastBlockStartIndex));
+				bufferOut = crypto.TransformFinalBlock(bufferIn, 0, bufferIn.Length);
+
+				if (!encrypt && PaddingMode == PaddingMode.Zeros)   //Remove padding null-bytes for PaddingMode.Zeros during decryption (Not done automatically by the crypto)
+					bufferOut = RemovePaddingZeros(bufferOut);
+
+				output.Write(bufferOut);
+
+				Progress = 1;
+				return true;
 			}
 			else
 				return false;
 		}
 
-		private byte[] RemovePaddingZeros(byte[] data)
+		private static byte[] RemovePaddingZeros(byte[] data)
 		{
 			int lastDataByte = -1;
 
@@ -487,7 +471,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 		}
 
 		/// <summary>
-		/// Checks whether the current settings of <see cref="algorithm"/> are valid and whether given data can be processed using those settings.
+		/// Checks whether the current settings of <see cref="Algorithm"/> are valid and whether given data can be processed using those settings.
 		/// </summary>
 		/// <param name="encryption">True if attempting encryption, false if attempting decryption.</param>
 		/// <param name="dataLength">The length of data that's being attempted to be processed.</param>
@@ -505,7 +489,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 			if (CipherMode == CipherMode.OFB || CipherMode == CipherMode.CTS)
 			{
 				if (PaddingMode != PaddingMode.None && PaddingMode != PaddingMode.Zeros)
-					throw new Exceptions.InvalidCipherParametersException(String.Format("{0} must be either None or Zeros for selected {1}.", nameof(PaddingMode), nameof(CipherMode)));
+					throw new Exceptions.InvalidCipherParametersException($"{nameof(PaddingMode)} must be either None or Zeros for selected {nameof(CipherMode)}.");
 			}
 
 			if (encryption)
@@ -513,7 +497,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 				if (CipherMode != CipherMode.OFB && CipherMode != CipherMode.CTS)
 				{
 					if (PaddingMode == PaddingMode.None && dataLength % BlockSizeByte != 0)
-						throw new Exceptions.InvalidInputException(String.Format("Invalid data, length of data must be a multiple of {0} for {1} \"None\" except for \"Stream-like\" {2}s.", nameof(BlockSizeByte), nameof(PaddingMode), nameof(CipherMode)));
+						throw new Exceptions.InvalidInputException($"Invalid data, length of data must be a multiple of {nameof(BlockSizeByte)} for {nameof(PaddingMode)} \"None\" except for \"Stream-like\" {nameof(CipherMode)}s.");
 				}
 			}
 			else
@@ -521,7 +505,7 @@ namespace OldCrypt_Library.Modern.Symmetrical
 				if (CipherMode != CipherMode.OFB && CipherMode != CipherMode.CTS)
 				{
 					if (dataLength % BlockSizeByte != 0)
-						throw new Exceptions.InvalidInputException(String.Format("Invalid data, length of data must be a multiple of {0} during decryption except for \"Stream-like\" {1}s.", nameof(BlockSizeByte), nameof(CipherMode)));
+						throw new Exceptions.InvalidInputException($"Invalid data, length of data must be a multiple of {nameof(BlockSizeByte)} during decryption except for \"Stream-like\" {nameof(CipherMode)}s.");
 				}
 			}
 

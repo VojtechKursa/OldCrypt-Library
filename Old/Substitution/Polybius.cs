@@ -1,24 +1,19 @@
-﻿using OldCrypt_Library.Data;
+﻿using OldCrypt.Library.Data;
 
-namespace OldCrypt_Library.Old.Substitution
+namespace OldCrypt.Library.Old.Substitution
 {
 	public class Polybius : Cipher
 	{
-		protected PolybiusTable table;
+		public PolybiusTable Table { get; protected set; }
 
 		public Polybius()
 		{
-			table = new PolybiusTable();
+			Table = new PolybiusTable();
 		}
 
 		public Polybius(string key)
 		{
-			table = new PolybiusTable(key);
-		}
-
-		public PolybiusTable Table
-		{
-			get { return table; }
+			Table = new PolybiusTable(key);
 		}
 
 		/// <inheritdoc/>
@@ -36,19 +31,19 @@ namespace OldCrypt_Library.Old.Substitution
 					result += " ";
 				else
 				{
-					temp = table.GetCoordinates(x);
+					temp = Table.GetCoordinates(x);
 
 					if (temp.Length == 2)   //Valid character
 						result += temp + " ";
 					else //Invalid character
 					{
-						if (!strict)
+						if (!Strict)
 							result += temp + " ";
 					}
 				}
 
 				encryptedChars++;
-				progress = (double)encryptedChars / text.Length;
+				Progress = (double)encryptedChars / text.Length;
 			}
 
 			return result.Remove(result.Length - 1);
@@ -57,16 +52,19 @@ namespace OldCrypt_Library.Old.Substitution
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
+			if (text == null)
+				return "";
+
 			string[] coordinates = text.Split(' ');
 			string result = "";
 
 			int processed = 0;
 			foreach (string coordinate in coordinates)
 			{
-				result += table.GetCharacter(coordinate);
+				result += Table.GetCharacter(coordinate);
 
 				processed++;
-				progress = (double)processed / coordinates.Length;
+				Progress = (double)processed / coordinates.Length;
 			}
 
 			return result;

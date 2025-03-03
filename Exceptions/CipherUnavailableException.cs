@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Exceptions
+namespace OldCrypt.Library.Exceptions
 {
 	/// <summary>
 	/// An <see cref="Exception"/>, that is thrown when the called encryption/decryption method is not available.<br />
@@ -19,6 +19,14 @@ namespace OldCrypt_Library.Exceptions
 		/// </summary>
 		/// <param name="message">The message to be included.</param>
 		public CipherUnavailableException(string message) : base(message)
+		{ }
+
+		/// <summary>
+		/// Creates a new instance of <see cref="CipherUnavailableException"/> with the specified message and inner exception.
+		/// </summary>
+		/// <param name="message">The message to be included.</param>
+		/// <param name="innerException">The inner exception.</param>
+		public CipherUnavailableException(string message, Exception innerException) : base(message, innerException)
 		{ }
 	}
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace OldCrypt_Library.Converters
+namespace OldCrypt.Library.Converters
 {
 	public class Binary : Cipher
 	{
@@ -17,7 +17,7 @@ namespace OldCrypt_Library.Converters
 				result += Convert.ToString(x, 2).PadLeft(8, '0') + " ";
 
 				encoded++;
-				progress = (double)encoded / bytes.Length;
+				Progress = (double)encoded / bytes.Length;
 			}
 
 			return result.Remove(result.Length - 1);
@@ -26,6 +26,9 @@ namespace OldCrypt_Library.Converters
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
+			if (text == null)
+				throw new ArgumentNullException(text);
+
 			string[] splitText = text.Split(' ');
 			byte[] bytes = new byte[splitText.Length];
 
@@ -33,7 +36,7 @@ namespace OldCrypt_Library.Converters
 			{
 				bytes[i] = Convert.ToByte(splitText[i], 2);
 
-				progress = (double)i / bytes.Length;
+				Progress = (double)i / bytes.Length;
 			}
 
 			return Encoding.UTF8.GetString(bytes);

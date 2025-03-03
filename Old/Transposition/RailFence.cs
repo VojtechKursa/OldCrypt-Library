@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
-namespace OldCrypt_Library.Old.Transposition
+namespace OldCrypt.Library.Old.Transposition
 {
 	public class RailFence : Cipher
 	{
@@ -14,10 +15,7 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <exception cref="Exceptions.InvalidCipherParametersException" />
 		public RailFence(int rowCount)
 		{
-			if (rowCount > 0)
-				this.rowCount = rowCount;
-			else
-				throw new Exceptions.InvalidCipherParametersException(nameof(rowCount) + " must be higher than 0.");
+			this.rowCount = rowCount > 0 ? rowCount : throw new Exceptions.InvalidCipherParametersException(nameof(rowCount) + " must be higher than 0.");
 		}
 
 		public int RowCount
@@ -28,7 +26,7 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override string Encrypt(string text)
 		{
-			text = base.ApplyIgnoreSpaceAndCase(text);
+			text = ApplyIgnoreSpaceAndCase(text);
 
 			if (rowCount > 0)
 			{
@@ -74,6 +72,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override string Decrypt(string text)
 		{
+			if (text == null)
+				throw new ArgumentNullException(nameof(text));
+
 			if (rowCount > 0)
 			{
 				string result = "";
@@ -147,6 +148,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override byte[] Encrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (rowCount > 0)
 			{
 				byte[] output = new byte[data.Length];
@@ -196,6 +200,9 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		public override byte[] Decrypt(byte[] data)
 		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
 			if (rowCount > 0)
 			{
 				byte[] output = new byte[data.Length];
@@ -271,28 +278,23 @@ namespace OldCrypt_Library.Old.Transposition
 		/// <inheritdoc/>
 		protected override bool FileHandler(BinaryReader input, BinaryWriter output, bool encrypt)
 		{
-			try
-			{
-				long fileSize = input.BaseStream.Length;
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
 
-				if (fileSize > int.MaxValue)
-					return false;
+			long fileSize = input.BaseStream.Length;
 
-				byte[] bytes = input.ReadBytes((int)fileSize);
-
-				if (encrypt)
-					bytes = Encrypt(bytes);
-				else
-					bytes = Decrypt(bytes);
-
-				output.Write(bytes);
-
-				progress = 1;
-			}
-			catch
-			{
+			if (fileSize > int.MaxValue)
 				return false;
-			}
+
+			byte[] bytes = input.ReadBytes((int)fileSize);
+
+			bytes = encrypt ? Encrypt(bytes) : Decrypt(bytes);
+
+			output.Write(bytes);
+
+			Progress = 1;
 
 			return true;
 		}

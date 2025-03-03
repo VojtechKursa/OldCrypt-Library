@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Data
+namespace OldCrypt.Library.Data
 {
 	/// <summary>
 	/// A class that represents a table used for <see cref="Old.Substitution.Polybius"/> cipher.
@@ -40,12 +40,9 @@ namespace OldCrypt_Library.Data
 			if (character > 96 && character < 123)  //Convert to uppercase
 				character = (char)(character - 32);
 
-			int[] coordinates = table.GetCoordinates(character);
+			int[] coordinates = Table.GetCoordinates(character);
 
-			if (coordinates != null)
-				return (coordinates[1] + 1).ToString() + (coordinates[0] + 1).ToString();
-			else
-				return character.ToString();
+			return coordinates != null ? $"{coordinates[1] + 1}" + $"{coordinates[0] + 1}" : character.ToString();
 		}
 
 		/// <summary>
@@ -61,21 +58,19 @@ namespace OldCrypt_Library.Data
 		/// </returns>
 		public char GetCharacter(string coordinates)
 		{
+			if (coordinates == null)
+				coordinates = "";
+
 			try
 			{
 				int y = Convert.ToInt32(coordinates[0]);
 				int x = Convert.ToInt32(coordinates[1]);
 
-				return table.GetChar(x - 1, y - 1);
+				return Table.GetChar(x - 1, y - 1);
 			}
-			catch
+			catch (IndexOutOfRangeException)
 			{
-				if (coordinates.Length == 0)
-					return ' ';
-				else if (coordinates.Length == 1)
-					return coordinates[0];
-				else
-					return '#';
+				return coordinates.Length == 0 ? ' ' : coordinates.Length == 1 ? coordinates[0] : '#';
 			}
 		}
 

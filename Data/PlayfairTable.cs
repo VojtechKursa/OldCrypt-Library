@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Data
+namespace OldCrypt.Library.Data
 {
 	/// <summary>
 	/// A class that represents a table used for <see cref="Old.Substitution.Playfair"/> cipher.
@@ -29,12 +29,16 @@ namespace OldCrypt_Library.Data
 		/// </summary>
 		/// <param name="characters">Array containing ONE PAIR of characters to encrypt.</param>
 		/// <returns>The encrypted pair of characters or null if <see cref="Array.Length"/> of "characters" != 2 or at least one of the characters is not found in the table.</returns>
+		/// <exception cref="ArgumentNullException" />
 		public char[] Encrypt(char[] characters)
 		{
+			if (characters == null)
+				throw new ArgumentNullException(nameof(characters));
+
 			if (characters.Length == 2)
 			{
-				int[] char1Coords = table.GetCoordinates(characters[0]);
-				int[] char2Coords = table.GetCoordinates(characters[1]);
+				int[] char1Coords = Table.GetCoordinates(characters[0]);
+				int[] char2Coords = Table.GetCoordinates(characters[1]);
 
 				if (char1Coords == null || char2Coords == null)
 					return null;
@@ -51,12 +55,10 @@ namespace OldCrypt_Library.Data
 				}
 				else
 				{
-					int temp = char1Coords[0];
-					char1Coords[0] = char2Coords[0];
-					char2Coords[0] = temp;
+					(char2Coords[0], char1Coords[0]) = (char1Coords[0], char2Coords[0]);
 				}
 
-				return new char[] { table.GetChar(char1Coords), table.GetChar(char2Coords) };
+				return new char[] { Table.GetChar(char1Coords), Table.GetChar(char2Coords) };
 			}
 			else
 				return null;
@@ -67,12 +69,16 @@ namespace OldCrypt_Library.Data
 		/// </summary>
 		/// <param name="characters">Array containing ONE PAIR of characters to decrypt.</param>
 		/// <returns>The decrypted pair of characters or null if <see cref="Array.Length"/> of "characters" != 2 or at least one of the characters is not found in the table.</returns>
+		/// <exception cref="ArgumentNullException" />
 		public char[] Decrypt(char[] characters)
 		{
+			if (characters == null)
+				throw new ArgumentNullException(nameof(characters));
+
 			if (characters.Length == 2)
 			{
-				int[] char1Coords = table.GetCoordinates(characters[0]);
-				int[] char2Coords = table.GetCoordinates(characters[1]);
+				int[] char1Coords = Table.GetCoordinates(characters[0]);
+				int[] char2Coords = Table.GetCoordinates(characters[1]);
 
 				if (char1Coords == null || char2Coords == null)
 					return null;
@@ -89,12 +95,10 @@ namespace OldCrypt_Library.Data
 				}
 				else
 				{
-					int temp = char1Coords[0];
-					char1Coords[0] = char2Coords[0];
-					char2Coords[0] = temp;
+					(char2Coords[0], char1Coords[0]) = (char1Coords[0], char2Coords[0]);
 				}
 
-				return new char[] { table.GetChar(char1Coords), table.GetChar(char2Coords) };
+				return new char[] { Table.GetChar(char1Coords), Table.GetChar(char2Coords) };
 			}
 			else
 				return null;

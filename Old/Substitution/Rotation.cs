@@ -1,4 +1,4 @@
-﻿namespace OldCrypt_Library.Old.Substitution
+﻿namespace OldCrypt.Library.Old.Substitution
 {
 	public class Rotation : Affine
 	{

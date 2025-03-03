@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace OldCrypt_Library.Modern.Asymmetrical
+namespace OldCrypt.Library.Modern.Asymmetrical
 {
 	/// <summary>
 	/// Represents the base class for modern Asymmetrical Ciphers.
@@ -10,7 +10,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 	{
 		#region Values
 
-		protected AsymmetricAlgorithm algorithm;
+		protected AsymmetricAlgorithm Algorithm { get; set; }
 
 		#endregion
 
@@ -24,12 +24,12 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <exception cref="Exceptions.InvalidKeySizeException"/>
 		public int KeySize
 		{
-			get => algorithm.KeySize;
+			get => Algorithm.KeySize;
 			set
 			{
 				try
 				{
-					algorithm.KeySize = value;
+					Algorithm.KeySize = value;
 				}
 				catch
 				{
@@ -46,7 +46,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <exception cref="Exceptions.InvalidKeySizeException"/>
 		public int KeySizeByte
 		{
-			get => algorithm.KeySize / 8;
+			get => Algorithm.KeySize / 8;
 			set => KeySize = value * 8;
 		}
 
@@ -56,7 +56,7 @@ namespace OldCrypt_Library.Modern.Asymmetrical
 		/// <returns>The supported key sizes of the current algorithm.</returns>
 		public KeySizes[] LegalKeySizes
 		{
-			get => algorithm.LegalKeySizes;
+			get => Algorithm.LegalKeySizes;
 		}
 
 		#endregion

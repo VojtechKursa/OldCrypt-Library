@@ -3,14 +3,14 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OldCrypt_Library.Hashing
+namespace OldCrypt.Library.Hashing
 {
 	/// <summary>
 	/// A base class for all Hash algorithms in the <see cref="OldCrypt_Library"/>.
 	/// </summary>
 	public abstract class Hash : Cipher
 	{
-		protected HashAlgorithm hashAlgorithm;
+		protected HashAlgorithm HashAlgorithm { get; set; }
 
 		/// <summary>
 		/// Encodes the given <i>text</i> using UTF-8 and computes hash from the resulting data. Then converts the result to uppercase hexadecimal.
@@ -25,7 +25,7 @@ namespace OldCrypt_Library.Hashing
 
 			foreach (byte x in hash)
 			{
-				result += Convert.ToString(x, 16).ToUpper().PadLeft(2, '0');
+				result += Convert.ToString(x, 16).ToUpperInvariant().PadLeft(2, '0');
 			}
 
 			return result;
@@ -47,9 +47,9 @@ namespace OldCrypt_Library.Hashing
 		/// <inheritdoc cref="HashAlgorithm.ComputeHash(byte[])"/>
 		public override byte[] Encrypt(byte[] data)
 		{
-			hashAlgorithm.Initialize();
+			HashAlgorithm.Initialize();
 
-			return hashAlgorithm.ComputeHash(data);
+			return HashAlgorithm.ComputeHash(data);
 		}
 
 		/// <summary>
@@ -60,6 +60,7 @@ namespace OldCrypt_Library.Hashing
 			throw new Exceptions.CipherUnavailableException("Decryption impossible for hashes");
 		}
 
+		/// <inheritdoc />
 		/// <summary>
 		/// Resets (re-initializes) the hashing module, calculates the hash of the input file and saves it to the output file.<br />
 		/// The result is saved to the output file in a form of uppercase hexadecimal numbers encoded in UTF-8.
@@ -67,37 +68,38 @@ namespace OldCrypt_Library.Hashing
 		/// <param name="input">The file to hash.</param>
 		/// <param name="output">The file where the resulting hash will be stored.</param>
 		/// <returns>True if the hashing was successful, otherwise false.</returns>
+		/// <exception cref="ArgumentNullException" />
 		public override bool EncryptFile(BinaryReader input, BinaryWriter output)
 		{
-			try
+			if (input == null)
+				throw new ArgumentNullException(nameof(input));
+			if (output == null)
+				throw new ArgumentNullException(nameof(output));
+
+			HashAlgorithm.Initialize();
+
+			byte[] buffer;
+
+			while (true)
 			{
-				hashAlgorithm.Initialize();
+				buffer = input.ReadBytes(1024);
 
-				byte[] buffer;
-
-				while (true)
+				if (buffer.Length == 1024)
+					HashAlgorithm.TransformBlock(buffer, 0, buffer.Length, null, 0);
+				else
 				{
-					buffer = input.ReadBytes(1024);
-
-					if (buffer.Length == 1024)
-						hashAlgorithm.TransformBlock(buffer, 0, buffer.Length, null, 0);
-					else
-					{
-						hashAlgorithm.TransformFinalBlock(buffer, 0, buffer.Length);
-						break;
-					}
+					HashAlgorithm.TransformFinalBlock(buffer, 0, buffer.Length);
+					break;
 				}
-
-				string hash = "";
-				foreach (byte x in hashAlgorithm.Hash)
-				{
-					hash += Convert.ToString(x, 16).ToUpper().PadLeft(2, '0');
-				}
-
-				output.Write(Encoding.UTF8.GetBytes(hash));
 			}
-			catch
-			{ return false; }
+
+			string hash = "";
+			foreach (byte x in HashAlgorithm.Hash)
+			{
+				hash += Convert.ToString(x, 16).ToUpperInvariant().PadLeft(2, '0');
+			}
+
+			output.Write(Encoding.UTF8.GetBytes(hash));
 
 			return true;
 		}

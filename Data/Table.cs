@@ -1,25 +1,21 @@
 ﻿using System;
 
-namespace OldCrypt_Library.Data
+namespace OldCrypt.Library.Data
 {
 	/// <summary>
 	/// A class that simplifies work with a 2D table/array.
 	/// </summary>
 	public class Table
 	{
-		private char[,] array;
+		private char[,] _array;
 
 		/// <summary>
 		/// Initiates a new table with the given array.
 		/// </summary>
 		/// <param name="array">Array with which the Table will be initiated.</param>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "array value must not be null to avoid unneccessary NullReferenceExceptions.")]
 		public Table(char[,] array)
 		{
-			if (array != null)
-				this.array = array;
-			else
-				array = new char[0, 0];
+			_array = array ?? (new char[0, 0]);
 		}
 
 		/// <summary>
@@ -27,13 +23,10 @@ namespace OldCrypt_Library.Data
 		/// </summary>
 		public char[,] Array
 		{
-			get { return array; }
+			get { return _array; }
 			set
 			{
-				if (value != null)
-					array = value;
-				else
-					array = new char[0, 0];
+				_array = value ?? (new char[0, 0]);
 			}
 		}
 
@@ -44,13 +37,15 @@ namespace OldCrypt_Library.Data
 		/// <returns>Character on the given coordinates.</returns>
 		/// <exception cref="NullReferenceException" />
 		/// <exception cref="IndexOutOfRangeException" />
+		/// <exception cref="ArgumentNullException" />
 		/// <exception cref="Exceptions.InvalidCoordinateLengthException" />
 		public char GetChar(int[] coordinates)
 		{
-			if (coordinates.Length == 2)
-				return GetChar(coordinates[0], coordinates[1]);
-			else
-				throw new Exceptions.InvalidCoordinateLengthException("The coordinates array must have a length of 2.");
+			return coordinates == null
+				? throw new ArgumentNullException(nameof(coordinates))
+				: coordinates.Length == 2
+				? GetChar(coordinates[0], coordinates[1])
+				: throw new Exceptions.InvalidCoordinateLengthException("The coordinates array must have a length of 2.");
 		}
 
 		/// <summary>
@@ -62,7 +57,7 @@ namespace OldCrypt_Library.Data
 		/// <exception cref="IndexOutOfRangeException" />
 		public char GetChar(int x, int y)
 		{
-			return array[x, y];
+			return _array[x, y];
 		}
 
 		/// <summary>
@@ -76,11 +71,11 @@ namespace OldCrypt_Library.Data
 		/// </returns>
 		public int[] GetCoordinates(char character)
 		{
-			for (int x = 0; x < array.GetLength(0); x++)
+			for (int x = 0; x < _array.GetLength(0); x++)
 			{
-				for (int y = 0; y < array.GetLength(1); y++)
+				for (int y = 0; y < _array.GetLength(1); y++)
 				{
-					if (array[x, y] == character)
+					if (_array[x, y] == character)
 						return new int[] { x, y };
 				}
 			}
