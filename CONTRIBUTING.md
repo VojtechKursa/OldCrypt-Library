@@ -1,8 +1,9 @@
 ﻿# Contributing to the OldCrypt Library
+
 The OldCrypt Library is open-source and anyone can modify it or add new code to it as long as they follow the conditions defined by the **GNU General Public License v3**.
 
 ## Standards
-Even though anyone can add or modify the code in any way they want. I'd like *(you don't have to follow this)* people to follow the standards I've written this library in, for consistency.
+Even though anyone can add or modify the code in any way they want. I'd like people to follow the standards I've written this library in, for consistency reasons.
 
 1. Basic structure
 	1. Every encryption method should be it's own non-static class that has the Cipher class or any other class that inherits from it as it's parent.
